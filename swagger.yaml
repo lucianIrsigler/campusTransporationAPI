@@ -1,686 +1,439 @@
 openapi: 3.0.0
 info:
   title: API Documentation
-  description: Documentation for various APIs including Map Data, GPS Tracking, Accessibility, Transportation Schedule, Route Optimization, and Rental Service.
-    The access to this API is defined by scopes.
-    
-    A client must indicate the scopes it requires.
-
-    Scopes:
-     - maps-get  
-     - maps-update
-     - gps-track
-     - accessibility-get
-     - accessibility-update
-     - schedule-get
-     - schedule-update
-     - optimize-route
-     - vehicle-get
-     - vehicle-changeStatus
-     - vehicle-update
-  
+  description: API for managing routes, amenities, stations, vehicles, rentals, and more.
   version: 1.0.0
 servers:
-  - url: https://baseurl
-    description: Base URL for API
-paths:
-  /map/buildings:
-    get:
-      summary: Get Map Data
-      tags:
-        - Map Data API
-      description: |
-        Returns an array of latitude and longitude coordinates for all buildings. 
+  - url: https://witsgobackend.azurewebsites.net/
 
-        Scopes required:
-         - maps-get
+paths:
+  /v1/accessibility/getWheelchairs:
+    get:
+      tags: 
+        - "Accessibility"
+      summary: Get available wheelchairs
+      description: Fetch a list of available wheelchairs with optional filters.
       parameters:
-        - name: filter
+        - name: campus
           in: query
-          description: Type of building to filter by
+          description: Filter by campus
+          required: false
           schema:
             type: string
-            enum: ["lecture", "library", "restaurants", "entrances"]
+        - name: latitude
+          in: query
+          description: Filter by latitude
+          required: false
+          schema:
+            type: number
+        - name: longitude
+          in: query
+          description: Filter by longitude
+          required: false
+          schema:
+            type: number
+        - name: type
+          in: query
+          description: Filter by type of wheelchair
+          required: false
+          schema:
+            type: string
       responses:
         '200':
-          description: Successful operation
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  buildings:
+                  data:
                     type: array
                     items:
                       type: object
-                      properties:
-                        buildingid:
-                          type: string
-                        type:
-                          type: string
-                        lat:
-                          type: number
-                          format: float
-                        lng:
-                          type: number
-                          format: float
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-        '503':
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-                  description: "Service unavailable"
+        '500':
+          description: Server error
 
-  /gps/users/{username}:
-    get:
-      summary: Get User Location
-      description: |
-       Returns the latest location of a user.    
-          
-       Scopes required:
-         - maps-update
-      tags:
-        - GPS Tracking API
-      parameters:
-        - name: username
-          in: path
-          required: true
-          description: Username of the user whose location is being requested
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  data:
-                    type: object
-                    properties:
-                      username:
-                        type: string
-                      latest_location:
-                        type: object
-                        properties:
-                          lat:
-                            type: number
-                            format: float
-                          lng:
-                            type: number
-                            format: float
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-        '503':
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-
-  /gps/vehicle/{vehicleid}:
-    get:
-      summary: Get Vehicle Location
-      tags:
-        - GPS Tracking API
-      description: Returns the latest location of a vehicle.
-      parameters:
-        - name: vehicleid
-          in: path
-          required: true
-          description: Vehicle ID of the vehicle whose location is being requested
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  data:
-                    type: object
-                    properties:
-                      vehicle_id:
-                        type: string
-                      current_location:
-                        type: object
-                        properties:
-                          lat:
-                            type: number
-                            format: float
-                          lng:
-                            type: number
-                            format: float
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-
-  /gps/vehicles:
-    get:
-      summary: Get All Vehicles
-      tags:
-        - GPS Tracking API
-      description: Returns a list of all vehicles with their current locations.
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  data:
-                    type: object
-                    properties:
-                      vehicles:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            vehicle_id:
-                              type: string
-                            type:
-                              type: string
-                            current_location:
-                              type: object
-                              properties:
-                                lat:
-                                  type: number
-                                  format: float
-                                lng:
-                                  type: number
-                                  format: float
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-        '503':
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-
-  /entrances/wheelchair:
-    get:
-      summary: Get Wheelchair Accessible Entrances
-      tags:
-        - Accessibility API
-      description: Returns locations of wheelchair-accessible entry points.
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  data:
-                    type: object
-                    properties:
-                      entrances:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            lat:
-                              type: number
-                              format: float
-                            lng:
-                              type: number
-                              format: float
-        '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-        '503':
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  description:
-                    type: string
-  /bus/schedules:
-    get:
-      summary: Retrieve bus schedule
-      tags:
-        - Transportation Schedule API
-      parameters:
-        - name: date
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-            example: "2024-08-16"
-      responses:
-        '200':
-          description: Successfully retrieved schedule
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "success"
-                  data:
-                    type: object
-                    properties:
-                      date:
-                        type: string
-                        format: date
-                      schedules:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            bus_id:
-                              type: string
-                            departure_time:
-                              type: string
-                              format: time
-                            arrival_time:
-                              type: string
-                              format: time
-                            from:
-                              type: string
-                            to:
-                              type: string
-                            status:
-                              type: string
-                              enum: [On Time, Delayed, Cancelled]
-                example:
-                  status: "success"
-                  data:
-                    date: "2024-08-16"
-                    schedules:
-                      - bus_id: "A123"
-                        departure_time: "08:00"
-                        arrival_time: "08:45"
-                        from: "Wits Main Campus"
-                        to: "Wits Education Campus"
-                        status: "On Time"
-                      - bus_id: "A124"
-                        departure_time: "09:00"
-                        arrival_time: "09:45"
-                        from: "Wits Education Campus"
-                        to: "Ernest Openheimer Halls of Residence"
-                        status: "Delayed"
-                      - bus_id: "A125"
-                        departure_time: "10:00"
-                        arrival_time: "10:45"
-                        from: "Ernest Openheimer Halls of Residence"
-                        to: "Wits Medical Campus"
-                        status: "Cancelled"
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                    example: 400
-                  description:
-                    type: string
-                    example: "Invalid request"
-        '503':
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                    example: 503
-                  description:
-                    type: string
-                    example: "Service unavailable"
-
-  /route/optimize:
+  /v1/admin/get_data:
     post:
-      summary: Optimize Route
-      tags:
-        - Route Optimization API
-      description: Calculates the most efficient route between multiple points.
+      summary: Get data from dynamic collection
+      tags: 
+        - "Admin"
+      description: Retrieve data based on the database and collection provided.
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                points:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      lat:
-                        type: number
-                        format: float
-                      lng:
-                        type: number
-                        format: float
+                database:
+                  type: string
+                  description: Database name
+                  enum: [Accessibility, Map, UserRoutes, RentalService, Transportation]
+                collection:
+                  type: string
+                  description: Collection name
+                  enum: [Users, Routes, Preferences, NavigationHistory, Route, Schedule, Stop, Tracking, Vehicle, Rental, Station, Student, Amenity, Building, PointOfInterest, Room, AccessibleRoute, Location]
+                data:
+                  type: object
+                  description: Data object for query
       responses:
         '200':
-          description: Successful operation
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status:
-                    type: string
                   data:
                     type: object
-                    properties:
-                      optimized_route:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            lat:
-                              type: number
-                              format: float
-                            lng:
-                              type: number
-                              format: float
         '400':
-          description: Bad/invalid request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  message:
-                    type: string
-        '503':
-          description: Service unavailable
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  message:
-                    type: string
-                    
-  /rentals/vehicles:
-    get:
-      summary: Returns all vehicles
-      tags:
-        - Rental Service API
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  vehicles:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        type:
-                          type: string
-                          enum: [bike, scooter, skateboard]
-                        location:
-                          type: string
-                        available:
-                          type: boolean
-              example:
-                vehicles:
-                  - id: "B1"
-                    type: "bike"
-                    location: "station1"
-                    available: true
-                  - id: "S1"
-                    type: "scooter"
-                    location: "station2"
-                    available: false
-                  - id: "SB1"
-                    type: "skateboard"
-                    location: "station3"
-                    available: true
+          description: Invalid request
+        '500':
+          description: Server error
 
-  /rentals/vehicles/{vehicle_id}:
-    parameters:
-      - name: vehicle_id
-        in: path
+  /v1/admin/insert_data:
+    post:
+      summary: Insert or edit data in a dynamic collection
+      tags: 
+        - "Admin"
+      description: Insert or edit records in the specified database and collection.
+      requestBody:
         required: true
-        schema:
-          type: string
-
-    get:
-      summary: Returns one vehicle
-      tags:
-        - Rental Service API
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                database:
+                  type: string
+                  description: Database name
+                collection:
+                  type: string
+                  description: Collection name
+                data:
+                  type: object
+                  description: Data object to insert or edit
       responses:
         '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  type:
-                    type: string
-                    enum: [bike, scooter, skateboard]
-                  location:
-                    type: string
-                  available:
-                    type: boolean
-              example:
-                id: "B1"
-                type: "bike"
-                location: "station1"
-                available: true
+          description: Success
         '400':
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  message:
-                    type: string
-              example:
-                status: 400
-                message: "Please provide vehicle_id"
-        '404':
-          description: Vehicle not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: integer
-                  message:
-                    type: string
-              example:
-                status: 404
-                message: "Vehicle not found"
+          description: Invalid request
+        '500':
+          description: Server error
 
-  /rentals/locations:
-    get:
-      summary: Return an array of latitude and longitude of the rental service locations
-      tags:
-        - Rental Service API
+  /v1/admin/update_data:
+    put:
+      summary: Update data in a dynamic collection
+      tags: 
+        - "Admin"
+      description: Update records in the specified database and collection based on the provided data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                database:
+                  type: string
+                  description: Database name
+                collection:
+                  type: string
+                  description: Collection name
+                data:
+                  type: object
+                  description: Data object to update
       responses:
         '200':
-          description: Operation was successful
+          description: Success
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /v1/map/getBuildings:
+    get:
+      summary: Get buildings
+      tags: 
+        - "Maps"
+      description: Fetch buildings with optional filters.
+      parameters:
+        - name: building_name
+          in: query
+          description: Filter by building name
+          required: false
+          schema:
+            type: string
+        - name: campus
+          in: query
+          description: Filter by campus
+          required: false
+          schema:
+            type: string
+        - name: latitude
+          in: query
+          description: Filter by latitude
+          required: false
+          schema:
+            type: number
+        - name: longitude
+          in: query
+          description: Filter by longitude
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Success
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  rental_locations:
+                  data:
                     type: array
                     items:
                       type: object
-                      properties:
-                        id:
-                          type: string
-                        lat:
-                          type: number
-                          format: float
-                        lng:
-                          type: number
-                          format: float
-              example:
-                rental_locations:
-                  - id: "station1"
-                    lat: 20.008921
-                    lng: 21.01231
-                  - id: "station2"
-                    lat: 20.008921
-                    lng: 21.01231
+        '500':
+          description: Server error
 
-  /rentals/locations/{id}:
+  /v1/map/getAmenities:
     get:
-      summary: Return data of a specific rental service location
-      tags:
-        - Rental Service API
+      summary: Get amenities
+      tags: 
+        - "Maps"
+      description: Fetch amenities based on building and type.
       parameters:
-        - name: id
+        - name: amenity_type
+          in: query
+          description: Filter by amenity type
+          required: false
+          schema:
+            type: string
+        - name: building_id
+          in: query
+          description: Filter by building ID
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+        '500':
+          description: Server error
+
+  /v1/rental/stations:
+    get:
+      summary: Get all stations
+      tags: 
+        - "Rentals"
+      description: Retrieve a list of all stations.
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Server error
+
+  /v1/rental/stations/{stationId}/vehicles:
+    get:
+      summary: Get vehicles at a station
+      tags: 
+        - "Rentals"
+      description: Fetch vehicles available at a given station.
+      parameters:
+        - name: stationId
           in: path
+          description: The station ID
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Operation was successful
+          description: Success
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  lat:
-                    type: number
-                    format: float
-                  lng:
-                    type: number
-                    format: float
-              example:
-                id: "station1"
-                lat: 20.008921
-                lng: 21.01231
+                type: array
+                items:
+                  type: object
         '404':
-          description: Rental station not found
+          description: Vehicles not found
+        '500':
+          description: Server error
+
+  /v1/rental/rent:
+    post:
+      summary: Rent a vehicle
+      tags: 
+        - "Rentals"
+      description: Rent a vehicle by providing student and station details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studentId:
+                  type: string
+                vehicleId:
+                  type: string
+                fromStationId:
+                  type: string
+                toStationId:
+                  type: string
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Server error
+
+  /v1/route_optimize/route_optimize:
+    post:
+      summary: Optimize a route
+      tags: 
+        - "Route Optimize"
+      description: Use Google Maps API to optimize a route between an origin and destination.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                origin:
+                  type: object
+                  properties:
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                destination:
+                  type: object
+                  properties:
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                travelMode:
+                  type: string
+                  enum: [DRIVING, WALKING, BICYCLING, TRANSIT]
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Bad request
+        '500':
+          description: Server error
+
+  /v1/schedule/pdf-text:
+    get:
+      summary: Fetch and extract text from the Wits bus schedule PDF.
+      tags: 
+        - "Schedule"
+      description: Downloads the bus schedule PDF from the Wits website, parses it, and returns the extracted text.
+      responses:
+        '200':
+          description: Extracted text from the PDF.
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Error downloading or parsing the PDF.
+  
+  /v1/schedule/new-schedule:
+    get:
+      summary: Fetch and extract text from the New Schedule PDF.
+      tags: 
+        - "Schedule"
+      description: Downloads the New Schedule PDF from the backend server, parses it, and returns the extracted text.
+      responses:
+        '200':
+          description: Extracted text from the New Schedule PDF.
+          content:
+            text/html:
+              schema:
+                type: string
+        '500':
+          description: Error downloading or parsing the New Schedule PDF.
+  
+  /v1/userRoutes/insertRoute:
+    post:
+      summary: Insert a new route.
+      tags: 
+        - "User Routes"
+      description: Adds a new route record to the database with start and end locations, duration, and route data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                start_location:
+                  type: object
+                  properties:
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                  required:
+                    - latitude
+                    - longitude
+                end_location:
+                  type: object
+                  properties:
+                    latitude:
+                      type: number
+                    longitude:
+                      type: number
+                  required:
+                    - latitude
+                    - longitude
+                duration:
+                  type: string
+                route_data:
+                  type: string
+              required:
+                - start_location
+                - end_location
+                - duration
+                - route_data
+      responses:
+        '200':
+          description: Successfully inserted the route.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status:
-                    type: integer
-                  message:
+                  data:
                     type: string
-              example:
-                status: 404
-                message: "Rental station not found"
-
-
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-    apiKeyAuth:
-      type: apiKey
-      in: header
-      name: Authorization
-
-securitySchemes: 
-  - bearerAuth: []
-  - apiKeyAuth: []
-
+        '400':
+          description: Missing required parameters or error during insertion.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
