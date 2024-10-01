@@ -306,6 +306,83 @@ paths:
         '500':
           description: Server error
 
+  /v1/rental/vehicle/{id}:
+    get:
+      summary: Get vehicle by ID
+      tags: 
+        - "Rentals"
+      description: Retrieve details of a specific vehicle by its ID.
+      parameters:
+        - name: id
+          in: path
+          description: The vehicle ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Vehicle not found
+        '500':
+          description: Server error
+
+  /v1/rental/return:
+    post:
+      summary: Return a vehicle
+      tags: 
+        - "Rentals"
+      description: Return a rented vehicle by specifying rental and station details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rentalId:
+                  type: string
+                  description: Rental ID
+                stationId:
+                  type: string
+                  description: Station ID
+      responses:
+        '200':
+          description: Success
+        '404':
+          description: Rental not found
+        '500':
+          description: Server error
+
+  /v1/rental/user/{userId}:
+    get:
+      summary: Get user's rental history
+      tags: 
+        - "Rentals"
+      description: Retrieve the rental history of a specific user by their user ID.
+      parameters:
+        - name: userId
+          in: path
+          description: The user ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '500':
+          description: Server error
+
   /v1/route_optimize/route_optimize:
     post:
       summary: Optimize a route
@@ -409,14 +486,11 @@ paths:
                   required:
                     - latitude
                     - longitude
-                duration:
-                  type: string
                 route_data:
                   type: string
               required:
                 - start_location
                 - end_location
-                - duration
                 - route_data
       responses:
         '200':
@@ -436,4 +510,205 @@ paths:
                 type: object
                 properties:
                   data:
+                    type: string
+
+  /v1/userRoutes/insertNavHistory:
+    post:
+      summary: Insert a new navigation history
+      tags: 
+        - "User Routes"
+      description: Adds a new navigation history record to the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                route_id:
+                  type: string
+              required:
+                - user_id
+                - route_id
+      responses:
+        '200':
+          description: Successfully inserted the navigation history.
+        '400':
+          description: Missing required parameters or error during insertion.
+        '500':
+          description: Server error
+
+  /v1/userRoutes/updatePreference:
+    post:
+      summary: Update user preferences
+      tags: 
+        - "User Routes"
+      description: Update user preferences such as route options.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                preference_type:
+                  type: string
+                preferences_value:
+                  type: string
+              required:
+                - user_id
+                - preference_type
+                - preferences_value
+      responses:
+        '200':
+          description: Successfully updated preferences.
+        '400':
+          description: Missing required parameters or error during update.
+        '500':
+          description: Server error
+
+  /v1/userRoutes/getPreferences:
+    get:
+      summary: Get user preferences
+      tags: 
+        - "User Routes"
+      description: Retrieve user preferences by user ID.
+      parameters:
+        - name: user_id
+          in: query
+          description: The user ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved preferences.
+        '400':
+          description: Missing required parameters or error during retrieval.
+        '500':
+          description: Server error
+  
+  /auth/google:
+    get:
+      tags:
+        - Authentication
+      summary: Start Google OAuth2 Authentication
+      description: Redirects to Google for authentication.
+      parameters:
+        - name: redirect
+          in: query
+          required: true
+          description: URL to redirect after successful authentication.
+          schema:
+            type: string
+        - name: register
+          in: query
+          description: Boolean flag indicating if the user is registering.
+          schema:
+            type: boolean
+      responses:
+        '302':
+          description: Redirects to Google for OAuth2 authentication.
+  
+  /google/callback:
+    get:
+      tags:
+        - Authentication
+      summary: Google OAuth2 Callback
+      description: Handles the callback after authentication with Google.
+      parameters:
+        - name: state
+          in: query
+          required: true
+          description: State data returned from Google OAuth2.
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirects to the success or failure route.
+        '400':
+          description: Error in authentication or missing user data.
+  
+  /auth/success:
+    get:
+      tags:
+        - Authentication
+      summary: Successful Authentication Redirect
+      description: Redirects to the client after successful authentication.
+      parameters:
+        - name: redirect
+          in: query
+          required: true
+          description: URL to redirect after successful authentication.
+          schema:
+            type: string
+        - name: email
+          in: query
+          required: true
+          description: User's email address.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns HTML page with loader for redirect.
+  
+  /auth/failure:
+    get:
+      tags:
+        - Authentication
+      summary: Authentication Failure Redirect
+      description: Redirects to a failure page if Google authentication fails.
+      parameters:
+        - name: error
+          in: query
+          required: false
+          description: Error message passed from the authentication process.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Returns the failure page with error details.
+  
+  /verifylogin:
+    get:
+      tags:
+        - Authentication
+      summary: Verify User Login
+      description: Verifies if the user is logged in by checking the JWT access token.
+      responses:
+        '200':
+          description: Indicates if the user is logged in and the JWT is valid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  isLoggedIn:
+                    type: boolean
+                  message:
+                    type: string
+  
+  /logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout User
+      description: Logs the user out by clearing cookies and invalidating the session.
+      responses:
+        '200':
+          description: Returns a message indicating successful logout.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
                     type: string
